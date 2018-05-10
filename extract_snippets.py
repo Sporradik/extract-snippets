@@ -1,28 +1,50 @@
 from fs import open_fs
 import json
 import re
+from pprint import pprint
 
 DIR = "~/sublime-snippets/Snippets"
 
 dictionary = {}
 
 re_category = re.compile("(?<=\/)(.*?)(?=\/)")
+re_name = re.compile("(?<=\/)([^\/]*?)(?=\.sublime-snippet)")
 re_body = re.compile("(?<=<content><!\[CDATA\[)(.*?)(?=\]\]><\/content>)", re.S)
-re_prefix = re.compile ("(?<=<tabTrigger>)(.*?)(?=<\/tabTrigger>)")
+re_prefix = re.compile("(?<=<tabTrigger>)(.*?)(?=<\/tabTrigger>)")
+re_description = re.compile("(?<=<description>)(.*?)(?=<\/description>)")
 
 def extract_snippets(fs):
-	# count = 0
 	for path in fs.walk.files(filter=['*.sublime-snippet']):
 		category = re_category.search(path)
 		category = category and category[0]
-		print(category)
+		dictionary[category] = dictionary.get(category, {})
+
+		name = re_name.search(path)
+		name = name and name[0]
+
+		dictionary[category][name] = dictionary[category].get(name, {})
+
+		dictionary[category]
 		with fs.open(path) as snippet:
 			file_contents = ""
+
 			for line in snippet:
-				file_contents += line
+				 file_contents += line
+
 			body = re_body.search(file_contents)
 			body = body and body[0]
-			print(body)
+			dictionary[category][name]["body"] = [line for line in body.splitlines()]
+
+			prefix = re_prefix.search(file_contents)
+			prefix = prefix and prefix[0]
+			dictionary[category][name]["prefix"] = prefix
+
+			description = re_description.search(file_contents)
+			description = description and description[0]
+
+			dictionary[category][name]["description"] = description
+
+	return dictionary
 
 projects_fs = open_fs(DIR)
-extract_snippets(projects_fs)
+pprint(extract_snippets(projects_fs))
