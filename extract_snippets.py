@@ -1,12 +1,10 @@
 from fs import open_fs
 import json
 import re
-from pprint import pprint
 
 SNIPPET_DIR = "~/sublime-snippets/Snippets"
 OUTPUT_FILE = "snippets.json"
 
-dictionary = {}
 
 re_category = re.compile("(?<=\/)(.*?)(?=\/)")
 re_name = re.compile("(?<=\/)([^\/]*?)(?=\.sublime-snippet)")
@@ -15,10 +13,15 @@ re_prefix = re.compile("(?<=<tabTrigger>)(.*?)(?=<\/tabTrigger>)")
 re_description = re.compile("(?<=<description>)(.*?)(?=<\/description>)")
 
 def extract_snippets(fs):
+	dictionary = {}
+	prev_category = ""
 	for path in fs.walk.files(filter=['*.sublime-snippet']):
 		category = re_category.search(path)
 		category = category and category[0]
 		dictionary[category] = dictionary.get(category, {})
+		if prev_category != category:
+			print(category.upper())
+			prev_category = category
 
 		name = re_name.search(path)
 		name = name and name[0]
@@ -44,6 +47,8 @@ def extract_snippets(fs):
 			description = description and description[0]
 
 			dictionary[category][name]["description"] = description
+
+			print(f"    {prefix} -- {description}")
 
 	return dictionary
 
