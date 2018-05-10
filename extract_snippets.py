@@ -13,15 +13,11 @@ re_description = re.compile("(?<=<description>)(.*?)(?=<\/description>)")
 
 def extract_snippets(fs):
 	dictionary = {}
-	prev_category = ""
 
 	for path in fs.walk.files(filter=['*.sublime-snippet']):
 		category = re_category.search(path)
 		category = category and category[0]
 		dictionary[category] = dictionary.get(category, {})
-		if prev_category != category:
-			print(category.upper())
-			prev_category = category
 
 		name = re_name.search(path)
 		name = name and name[0]
@@ -46,12 +42,17 @@ def extract_snippets(fs):
 			description = description and description[0]
 			dictionary[category][name]["description"] = description
 
-			print(f"    {prefix} -- {description}")
-
 	return dictionary
 
 projects_fs = open_fs(SNIPPET_DIR)
 data = extract_snippets(projects_fs)
+
+for key, value in data.items():
+	print(key)
+	for k in sorted(value.keys(), key=lambda x:x.lower()):
+		pfx = value[k]["prefix"]
+		desc = value[k]["description"]
+		print(f"    {pfx} -- {desc}")
 
 with open(OUTPUT_FILE, 'w') as outfile:  
     json.dump(data, outfile, indent=4)
