@@ -3,7 +3,8 @@ import json
 import re
 from pprint import pprint
 
-DIR = "~/sublime-snippets/Snippets"
+SNIPPET_DIR = "~/sublime-snippets/Snippets"
+OUTPUT_FILE = "snippets.json"
 
 dictionary = {}
 
@@ -46,5 +47,9 @@ def extract_snippets(fs):
 
 	return dictionary
 
-projects_fs = open_fs(DIR)
-pprint(extract_snippets(projects_fs))
+projects_fs = open_fs(SNIPPET_DIR)
+
+data = extract_snippets(projects_fs)
+
+with open(OUTPUT_FILE, 'w') as outfile:  
+    json.dump(data, outfile, indent=4)
